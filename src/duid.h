@@ -30,6 +30,6 @@
 
 #define DUID_LEN	128 + 2
 
-size_t duid_init(const struct interface *);
+size_t duid_init(const struct interface *, const char*);
 
 #endif

@@ -205,6 +205,7 @@ struct if_options {
 	ssize_t arping_len;
 	in_addr_t *arping;
 	char *fallback;
+	char *duid_path;
 
 	struct if_ia *ia;
 	size_t ia_len;
