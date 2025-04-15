@@ -93,6 +93,7 @@ usage(void)
 
 printf("usage: "PACKAGE"\t[-146ABbDdEGgHJKLMNPpqTV]\n"
 	"\t\t[-C, --nohook hook] [-c, --script script]\n"
+	"\t\t[--duid-path path]\n"
 	"\t\t[-e, --env value] [-F, --fqdn FQDN] [-f, --config file]\n"
 	"\t\t[-h, --hostname hostname] [-I, --clientid clientid]\n"
 	"\t\t[-i, --vendorclassid vendorclassid] [-j, --logfile logfile]\n" 
@@ -868,7 +869,7 @@ dhcpcd_startinterface(void *arg)
 	if (ifo->options & (DHCPCD_DUID | DHCPCD_IPV6)) {
 		/* Report client DUID */
 		if (ifp->ctx->duid == NULL) {
-			if (duid_init(ifp) == 0)
+			if (duid_init(ifp, ifo->duid_path) == 0)
 				return;
 			loginfox("DUID %s",
 			    hwaddr_ntoa(ifp->ctx->duid,

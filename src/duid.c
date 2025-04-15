@@ -152,7 +152,7 @@ duid_make(uint8_t *d, const struct interface *ifp, uint16_t type)
 
 #define DUID_STRLEN DUID_LEN * 3
 static size_t
-duid_get(uint8_t **d, const struct interface *ifp)
+duid_get(uint8_t **d, const struct interface *ifp, const char *path)
 {
 	FILE *fp;
 	uint8_t *data;
@@ -160,19 +160,26 @@ duid_get(uint8_t **d, const struct interface *ifp)
 	int x = 0;
 	char line[DUID_STRLEN];
 	const struct interface *ifp2;
+	const char *duidpath;
 
 	/* If we already have a DUID then use it as it's never supposed
 	 * to change once we have one even if the interfaces do */
-	if ((len = read_hwaddr_aton(&data, DUID)) != 0) {
+	if (path == NULL || strlen(path) == 0) {
+		duidpath = DUID;
+	} else {
+		duidpath = path;
+	}
+
+	if ((len = read_hwaddr_aton(&data, duidpath)) != 0) {
 		if (len <= DUID_LEN) {
 			*d = data;
 			return len;
 		}
-		logerrx("DUID too big (max %u): %s", DUID_LEN, DUID);
+		logerrx("DUID too big (max %u): %s", DUID_LEN, duidpath);
 		/* Keep the buffer, will assign below. */
 	} else {
 		if (errno != ENOENT)
-			logerr("%s", DUID);
+			logerr("%s", duidpath);
 		if ((data = malloc(DUID_LEN)) == NULL) {
 			logerr(__func__);
 			return 0;
@@ -205,8 +212,8 @@ duid_get(uint8_t **d, const struct interface *ifp)
 		}
 	}
 
-	if (!(fp = fopen(DUID, "w"))) {
-		logerr("%s", DUID);
+	if (!(fp = fopen(duidpath, "w"))) {
+		logerr("%s", duidpath);
 		return duid_make(data, ifp, DUID_LL);
 	}
 	len = duid_make(data, ifp, DUID_LLT);
@@ -215,17 +222,17 @@ duid_get(uint8_t **d, const struct interface *ifp)
 		x = -1;
 	/* Failed to write the duid? scrub it, we cannot use it */
 	if (x < 1) {
-		logerr("%s", DUID);
-		unlink(DUID);
+		logerr("%s", duidpath);
+		unlink(duidpath);
 		return duid_make(data, ifp, DUID_LL);
 	}
 	return len;
 }
 
-size_t duid_init(const struct interface *ifp)
+size_t duid_init(const struct interface *ifp, const char *path)
 {
 
 	if (ifp->ctx->duid == NULL)
-		ifp->ctx->duid_len = duid_get(&ifp->ctx->duid, ifp);
+		ifp->ctx->duid_len = duid_get(&ifp->ctx->duid, ifp, path);
 	return ifp->ctx->duid_len;
 }

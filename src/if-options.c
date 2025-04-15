@@ -105,6 +105,7 @@
 #define O_LASTLEASE_EXTEND	O_BASE + 46
 #define O_INACTIVE		O_BASE + 47
 #define	O_MUDURL		O_BASE + 48
+#define O_DUID_PATH		O_BASE + 49
 
 const struct option cf_options[] = {
 	{"background",      no_argument,       NULL, 'b'},
@@ -204,6 +205,7 @@ const struct option cf_options[] = {
 	{"lastleaseextend", no_argument,       NULL, O_LASTLEASE_EXTEND},
 	{"inactive",        no_argument,       NULL, O_INACTIVE},
 	{"mudurl",          required_argument, NULL, O_MUDURL},
+	{"duid-path",       required_argument, NULL, O_DUID_PATH},
 	{NULL,              0,                 NULL, '\0'}
 };
 
@@ -2167,6 +2169,15 @@ err_sla:
 			return -1;
 		}
 		*ifo->mudurl = (uint8_t)s;
+		break;
+	case O_DUID_PATH:
+		ARG_REQUIRED;
+		free(ifo->duid_path);
+		ifo->duid_path = strdup(arg);
+		if (ifo->duid_path == NULL) {
+			logerrx(__func__);
+			return -1;
+		}
 		break;
 	default:
 		return 0;
