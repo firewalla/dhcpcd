@@ -183,6 +183,7 @@
 #define O_CONFIGURE		O_BASE + 50
 #define O_NOCONFIGURE		O_BASE + 51
 #define O_RANDOMISE_HWADDR	O_BASE + 52
+#define O_DUID_PATH		O_BASE + 53
 
 extern const struct option cf_options[];
 
@@ -263,6 +264,7 @@ struct if_options {
 	ssize_t arping_len;
 	in_addr_t *arping;
 	char *fallback;
+	char *duid_path;
 
 	struct if_ia *ia;
 	size_t ia_len;

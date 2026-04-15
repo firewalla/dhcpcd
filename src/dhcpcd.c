@@ -105,6 +105,7 @@ usage(void)
 
 printf("usage: "PACKAGE"\t[-146ABbDdEGgHJKLMNPpqTV]\n"
 	"\t\t[-C, --nohook hook] [-c, --script script]\n"
+	"\t\t[--duid-path path]\n"
 	"\t\t[-e, --env value] [-F, --fqdn FQDN] [-f, --config file]\n"
 	"\t\t[-h, --hostname hostname] [-I, --clientid clientid]\n"
 	"\t\t[-i, --vendorclassid vendorclassid] [-j, --logfile logfile]\n"
@@ -858,6 +859,7 @@ static void
 dhcpcd_initduid(struct dhcpcd_ctx *ctx, struct interface *ifp)
 {
 	char buf[DUID_LEN * 3];
+	const char *duid_path;
 
 	if (ctx->duid != NULL) {
 		if (ifp == NULL)
@@ -865,7 +867,8 @@ dhcpcd_initduid(struct dhcpcd_ctx *ctx, struct interface *ifp)
 		return;
 	}
 
-	duid_init(ctx, ifp);
+	duid_path = (ifp != NULL && ifp->options != NULL) ? ifp->options->duid_path : NULL;
+	duid_init(ctx, ifp, duid_path);
 	if (ctx->duid == NULL)
 		return;
 
