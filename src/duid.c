@@ -149,25 +149,28 @@ duid_make(void *d, const struct interface *ifp, uint16_t type)
 
 #define DUID_STRLEN DUID_LEN * 3
 static size_t
-duid_get(struct dhcpcd_ctx *ctx, const struct interface *ifp)
+duid_get(struct dhcpcd_ctx *ctx, const struct interface *ifp, const char *path)
 {
 	uint8_t *data;
 	size_t len, slen;
 	char line[DUID_STRLEN];
 	const struct interface *ifp2;
+	const char *duidpath;
+
+	duidpath = (path != NULL && path[0] != '\0') ? path : DUID;
 
 	/* If we already have a DUID then use it as it's never supposed
 	 * to change once we have one even if the interfaces do */
-	if ((len = dhcp_read_hwaddr_aton(ctx, &data, DUID)) != 0) {
+	if ((len = dhcp_read_hwaddr_aton(ctx, &data, duidpath)) != 0) {
 		if (len <= DUID_LEN) {
 			ctx->duid = data;
 			return len;
 		}
-		logerrx("DUID too big (max %u): %s", DUID_LEN, DUID);
+		logerrx("DUID too big (max %u): %s", DUID_LEN, duidpath);
 		/* Keep the buffer, will assign below. */
 	} else {
 		if (errno != ENOENT)
-			logerr("%s", DUID);
+			logerr("%s", duidpath);
 		if ((data = malloc(DUID_LEN)) == NULL) {
 			logerr(__func__);
 			return 0;
@@ -218,7 +221,7 @@ duid_get(struct dhcpcd_ctx *ctx, const struct interface *ifp)
 		line[slen++] = '\n';
 		line[slen] = '\0';
 	}
-	if (dhcp_writefile(ctx, DUID, 0640, line, slen) == -1) {
+	if (dhcp_writefile(ctx, duidpath, 0640, line, slen) == -1) {
 		logerr("%s: cannot write duid", __func__);
 		if (ctx->duid_type != DUID_LL)
 			return duid_make(data, ifp, DUID_LL);
@@ -227,10 +230,10 @@ duid_get(struct dhcpcd_ctx *ctx, const struct interface *ifp)
 }
 
 size_t
-duid_init(struct dhcpcd_ctx *ctx, const struct interface *ifp)
+duid_init(struct dhcpcd_ctx *ctx, const struct interface *ifp, const char *path)
 {
 
 	if (ctx->duid == NULL)
-		ctx->duid_len = duid_get(ctx, ifp);
+		ctx->duid_len = duid_get(ctx, ifp, path);
 	return ctx->duid_len;
 }

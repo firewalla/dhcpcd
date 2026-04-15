@@ -168,6 +168,7 @@ const struct option cf_options[] = {
 	{"link_rcvbuf",     required_argument, NULL, O_LINK_RCVBUF},
 	{"configure",       no_argument,       NULL, O_CONFIGURE},
 	{"noconfigure",     no_argument,       NULL, O_NOCONFIGURE},
+	{"duid-path",       required_argument, NULL, O_DUID_PATH},
 	{NULL,              0,                 NULL, '\0'}
 };
 
@@ -2279,6 +2280,15 @@ invalid_token:
 	case O_NOCONFIGURE:
 		ifo->options &= ~DHCPCD_CONFIGURE;
 		break;
+	case O_DUID_PATH:
+		ARG_REQUIRED;
+		free(ifo->duid_path);
+		ifo->duid_path = strdup(arg);
+		if (ifo->duid_path == NULL) {
+			logerrx(__func__);
+			return -1;
+		}
+		break;
 	default:
 		return 0;
 	}
@@ -2736,6 +2746,7 @@ free_options(struct dhcpcd_ctx *ctx, struct if_options *ifo)
 	free(ifo->arping);
 	free(ifo->blacklist);
 	free(ifo->fallback);
+	free(ifo->duid_path);
 
 	for (opt = ifo->dhcp_override;
 	    ifo->dhcp_override_len > 0;
