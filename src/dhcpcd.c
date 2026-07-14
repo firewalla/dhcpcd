@@ -2444,8 +2444,12 @@ start_manager:
 	dhcpcd_setlinkrcvbuf(&ctx);
 #endif
 
-	/* Try and create DUID from the machine UUID. */
-	dhcpcd_initduid(&ctx, NULL);
+	/* Try and create DUID from the machine UUID, unless a specific
+	 * duid-path was given for this interface — let the per-interface
+	 * lookup in dhcpcd_startinterface() handle that case instead. */
+	if ((ctx.options & DHCPCD_MANAGER) ||
+	    ifo->duid_path == NULL || ifo->duid_path[0] == '\0')
+		dhcpcd_initduid(&ctx, NULL);
 
 	/* Cache the default vendor option. */
 	if (dhcp_vendor(ctx.vendor, sizeof(ctx.vendor)) == -1)
